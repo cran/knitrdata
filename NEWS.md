@@ -1,3 +1,15 @@
+knitrdata 0.4.1
+---------------------------------------------------------------------
+
+- Fix to use radio buttons instead of checkboxes in addings
+- Fix to avoid adding extra newline to decoded text files
+- Implementation of gpg encoding in Rstudio addins
+
+knitrdata 0.4.0
+---------------------------------------------------------------------
+
+- Added Rstudio addins for adding and removing data chunks
+
 knitrdata 0.3.1
 ---------------------------------------------------------------------
 

@@ -67,7 +67,7 @@ function call as additional chunk options.
 \itemize{
 \item \code{create_chunk}: Silently returns chunk text contents.
 
-\item \code{insert_chunk}: Invisibly returns the contents of the modified Rmarkdown
+\item \code{insert_chunk}: Invisibly returns the contents of the modified Rmarkdown text
 as a character vector with each line in an element of the vector
 including the chunk at the appropriate line number.
 }}
@@ -127,7 +127,14 @@ unlink("test.create_chunks_files",recursive=TRUE)
 
 setwd(owd)
 }
+\seealso{
+Other Chunk tools: 
+\code{\link{create_data_chunk_dialog}()},
+\code{\link{insert_data_chunk_dialog}()},
+\code{\link{list_rmd_chunks}()},
+\code{\link{remove_chunks_dialog}()}
+}
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }
-\concept{create_chunks}
+\concept{Chunk tools}

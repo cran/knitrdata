@@ -38,7 +38,7 @@
 #' @export
 #'
 #' @describeIn create_chunk Silently returns chunk text contents.
-#' @family create_chunks
+#' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #'
 #' @example tests/test.create_chunks.R
@@ -78,7 +78,7 @@ create_chunk = function(text=readLines(file),
 
 #' @export
 #'
-#' @describeIn create_chunk Invisibly returns the contents of the modified Rmarkdown
+#' @describeIn create_chunk Invisibly returns the contents of the modified Rmarkdown text
 #'   as a character vector with each line in an element of the vector
 #'   including the chunk at the appropriate line number.
 insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
@@ -135,7 +135,7 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 #' @describeIn list_rmd_chunks Returns a data frame with 4 columns:
 #'   the chunk type, the chunk label, the line number of the beginning of the chunk
 #'   and the line number of the end of the chunk.
-#' @family list_rmd_chunks
+#' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #'
 #' @example tests/test.create_chunks.R
@@ -143,6 +143,11 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
                            chunk.start.pattern="^```[{](.+)[}] *$",
                            chunk.end.pattern="^``` *$") {
   starts = grep(chunk.start.pattern,text)
+
+  if (length(starts) < 1) {
+    warning("No chunks found.")
+    return(NULL)
+  }
 
   # more robust search for endings that should work even if some
   # code chunks lack curly braces
@@ -183,7 +188,6 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
 #' @describeIn list_rmd_chunks Returns a list with the contents of the Rmarkdown
 #'   document broken into
 #'   4 pieces: pre-chunk, chunk header, chunk contents, chunk tail, and post-chunk.
-#' @family list_rmd_chunks
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #'
 #' @example tests/test.create_chunks.R
