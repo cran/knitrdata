@@ -12,7 +12,7 @@
 
 <meta name="author" content="David M. Kaplan" />
 
-<meta name="date" content="2020-07-07" />
+<meta name="date" content="2020-07-15" />
 
 <title>Building standalone Rmarkdown documents using the data language engine</title>
 
@@ -319,11 +319,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Building standalone Rmarkdown documents using the data language engine</h1>
 <h4 class="author">David M. Kaplan</h4>
-<h4 class="date">2020-07-07</h4>
+<h4 class="date">2020-07-15</h4>
 
 
 
-<p>This document provides a brief introduction to how to use the <code>knitrdata</code> package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the <code>examples</code> directory provided with the package.</p>
+<p>This document provides a brief introduction to how to use the <code>knitrdata</code> package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the <code>examples</code> directory provided with the package. There is also an <a href="#video">instructional video</a> for how to use the package.</p>
 <div id="conceptual-overview" class="section level2">
 <h2>Conceptual overview</h2>
 <p>Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with the data to ensure results are reproducible. The <code>knitrdata</code> package addresses this need by creating a mechanism for incorporating arbitrary text and binary data in Rmarkdown documents. It works conceptually and technically in a manner that is very similar to how images and other binary data are incorporated into standalone HTML web pages: data are incorporated into specially delimited chunks that consist of the data themselves plus a small bit of header information explaining how the data are to be processed. Text data (e.g., CSV data tables, BibTeX references, LaTeX style files) is typically incorporated in chunks as is, whereas binary data (e.g., RDS files, images, NetCDF files) is encoded as text using one of two standard encoding schemes. During knitting of the Rmarkdown document, chunk data is decoded if necessary, after which it can either be loaded into the Rmarkdown R session or saved to an external file.</p>
@@ -722,10 +722,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li><code>insert_data_chunk_dialog()</code>, which has the same functionality as <code>create_data_chunk_dialog()</code>, except that the data chunk that is created is inserted at the cursor location in the active source document in the Rstudio editor</li>
 <li><code>remove_chunks_dialog()</code>, which shows a data table listing all chunks in the active source document in the Rstudio editor, allowing one to select a set of chunks (i.e., rows) and then delete those chunks with the click of a button</li>
 </ul>
-<p>The last two of these, <code>insert_data_chunk_dialog()</code> and <code>remove_chunks_dialog()</code>, are accessible in the Rstudio Addins menu under the <code>knitrdata</code> heading with titles <code>Insert data chunk</code> and <code>Remove chunks</code>, respectively.</p>
+<p>The last two of these, <code>insert_data_chunk_dialog()</code> and <code>remove_chunks_dialog()</code>, are accessible in the Rstudio Addins menu under the <code>knitrdata</code> heading with titles <code>Insert filled data chunk</code> and <code>Remove chunks</code>, respectively. There is also a non-interactive addin entitled <code>Insert empty data chunk</code> that inserts an empty <code>data</code> chunk template in the active source document.</p>
 <p>Before using these tools, first install all the additional packages suggested by <code>knitrdata</code>: <code>shiny</code>, <code>miniUI</code>, <code>DT</code>, <code>rstudioapi</code>.</p>
-<p>The use of these tools is generally self explanatory. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to <code>binary</code> and <code>base64</code> respectively. GPG encoding of data using the app is supported and will prompt the user to select the key ID(s)s of the key(s) to be used to encrypt the data. By default, <code>md5sum</code> checks of all binary data chunks will be included.</p>
-<p>The chunk removal app present a searchable list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the <code>Remove chunks</code> button.</p>
+<p>The use of these tools is generally self explanatory and is explained in greater detail in the <a href="#video">instructional video</a>. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to <code>binary</code> and <code>base64</code> respectively. GPG encoding of data using the app is supported and will prompt the user to select the key ID(s)s of the key(s) to be used to encrypt the data. By default, <code>md5sum</code> checks of all binary data chunks will be included.</p>
+<p>The chunk removal addin presents a searchable list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the <code>Remove chunks</code> button.</p>
 <p>Note that these tools do not try to determine if the active source document is a Rmarkdown document. If undesired changes are made to a document, then one can undo (<code>ctrl-z</code>) those changes afterward.</p>
 </div>
 <div id="use-cases" class="section level2">
@@ -737,6 +737,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="when-not-to-use-data-chunks" class="section level2">
 <h2>When not to use data chunks</h2>
 <p>Though the <code>knitrdata</code> package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse <code>data</code> chunks in Rstudio, use Rstudio’s navigation tools, use <code>knitrdata</code>’s helper functions for <code>data</code> chunk creation and the use of the <code>external.file</code> chunk option all can reduce the importance of these issues, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. In particular, Rstudio currently will not open a Rmarkdown documents larger than 5 MB in size, though larger documents can still be opened by other editors and rendering from the command line using <code>rmarkdown::render</code> is always possible. Basic prudence should be used when deciding what and how much data to include in Rmarkdown documents.</p>
+</div>
+<div id="video" class="section level2">
+<h2>Instructional video</h2>
+<p>There is an instructional video screencast demonstrating the use of <code>knitrdata</code> in Rstudio. It is available on <a href="https://youtu.be/xX4YRAXYFxE">youtube</a> or by clicking the video insert below.</p>
+<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+</iframe>
 </div>
 <div id="tt" class="section level2">
 <h2>Tips &amp; tricks</h2>
@@ -777,6 +783,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb42-8"><a href="#cb42-8"></a><span class="bn">cat(sprintf(cond_text,5+4))</span></span>
 <span id="cb42-9"><a href="#cb42-9"></a><span class="bn">```</span></span></code></pre></div>
 <p>Will lead to <code>%d</code> being replaced with <code>9</code>.</p>
+</div>
+<div id="gpg-data-chunk-error-password-callback-did-not-return-a-string-value" class="section level3">
+<h3>GPG <code>data</code> chunk error: <code>Password callback did not return a string value</code></h3>
+<p>If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected GPG key, then knitting may fail with the error <code>Password callback did not return a string value</code>. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, <code>gpg::gpg_decrypt</code> is unable to open the password entry dialog during the knitting process. The <code>gpg</code> package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then <code>gpg::gpg_decrypt</code> will not attempt to open the password entry dialog, thereby avoiding the problem.</p>
+<p>If working in Rstudio, then the simplest way to work around this problem is by manually executing the chunk that produced the error using the <code>Run Current Chunk</code> button. Provided that the <code>knitrdata</code> package has been loaded/attached in the interactive R session, then this will open the password dialog, allowing one to enter the password and decrypt the chunk contents. After this, the password should be (temporarily) saved in the keyring and the document should knit successfully.</p>
+<p>As a final workaround to this problem, one can remove the password from the relevant GPG key in the keyring manager before knitting.</p>
 </div>
 </div>
 <div id="full-list-of-data-chunk-options" class="section level2">

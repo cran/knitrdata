@@ -17,8 +17,8 @@ firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1
 #' When the \code{Create chunk} button is clicked, the function will return the chunk contents
 #' including header and tail.
 #'
-#' @param title Text to place in title bar of gadget.
-#' @param infobar Text to place in information bar at top of gadget
+#' @param title Text to place in title bar of gadget
+#' @param infobar HTML content to place in information bar at top of gadget
 #'
 #' @return Invisibly returns the text of the data chunk as a character vector, one line per element.
 #'
@@ -32,8 +32,9 @@ firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-create_data_chunk_dialog = function (title="Data chunk creator",
-                                     infobar="Fill out  click above to create chunk") {
+create_data_chunk_dialog = function (
+  title="Data chunk creator",
+  infobar="<big><b>Fill out, then click above to create chunk</b></big>") {
   pkgs = c("shiny","miniUI")
   if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
     stop("This function requires that the following packages be installed: ",
@@ -43,7 +44,7 @@ create_data_chunk_dialog = function (title="Data chunk creator",
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
                    right = miniUI::miniTitleBarButton("done", "Create chunk", primary = TRUE)),
     miniUI::miniContentPanel(
-      shiny::h3(shiny::textOutput('infobar')),
+      shiny::uiOutput('infobar'),
       shiny::hr(),
       shiny::fileInput("filename","Data file: "),
       shiny::textInput("chunk_label","Chunk label: ",placeholder="mydatachunk",width="100%"),
@@ -72,7 +73,7 @@ create_data_chunk_dialog = function (title="Data chunk creator",
   server <- function(input, output, session) {
     rv = shiny::reactiveValues(makechunk=FALSE)
 
-    output$infobar = shiny::renderText(infobar)
+    output$infobar = shiny::renderUI(shiny::HTML(infobar))
 
     # Add receivers list if GPG chosen
     shiny::observeEvent(input$encoding,{
@@ -228,7 +229,7 @@ create_data_chunk_dialog = function (title="Data chunk creator",
     app=ui, server=server,
     viewer = shiny::dialogViewer(title))
 
-  invisible(chunk)
+  return(invisible(chunk))
 }
 
 # Insert data chunk ------------------------------
@@ -264,31 +265,68 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   if (!requireNamespace("rstudioapi",quietly=TRUE))
     stop("The rstudioapi package must be installed to use this function.")
 
+  # Active document stuff
   context = rstudioapi::getSourceEditorContext()
-  infobar = paste0("Active document: ",ifelse(isemp(context$path),"<<UNKNOWN>>",context$path))
+  ln = context$selection[[1]]$range$start["row"]
+  dp = rstudioapi::document_position(ln,1) # position object
 
+  # Infobar contents
+  infobar = paste0(
+    "<big><b>",
+    "Active document: ",ifelse(isemp(context$path),"<i>UNKNOWN</i>",context$path),
+    "<br/>",
+    "Line number: ",ln,
+    "</b></big>")
+
+  # Run dialog if chunk not given as argument
   if (is.null(chunk))
     chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
-    invisible(FALSE)
+    return(invisible(FALSE))
 
-  ln = context$selection[[1]]$range$start["row"]
-
-  txt = insert_chunk(
-    chunk = chunk,
-    line = ln,
-    rmd.text = context$contents
-  )
-
-  rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
+  # Insert text
+  rstudioapi::insertText(dp,paste0(paste(chunk,collapse="\n"),"\n"),context$id)
 
   # Set position - sometimes causes errors for some unknown reason
-  rstudioapi::setCursorPosition(
-    rstudioapi::document_position(ln,1),
-    context$id)
+  rstudioapi::setCursorPosition(dp,context$id)
 
-  invisible(TRUE)
+  return(invisible(TRUE))
+}
+
+# Empty data chunk template ----------------------------
+
+#' Insert an empty data chunk template in active source document
+#'
+#' This function is essentially the equivalent for data chunks
+#' of the "Insert a new code chunk" menu item
+#' available in Rstudio when a Rmarkdown document is open. It places at the current cursor
+#' location an empty \code{data} chunk that can then be modified and filled in by hand.
+#'
+#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+#'
+#' @examples
+#' \dontrun{
+#' insert_data_chunk_template()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
+insert_data_chunk_template = function() {
+  chunk = create_chunk(
+    paste(
+      sep="\n",
+      "# Instructions:",
+      "# 1) Fill in at least one of these chunk options: output.var & output.file",
+      "# 2) Add or modify other chunk options",
+      "# 3) Delete these instructions and replace with data"
+    ),
+    format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
+
+  return(insert_data_chunk_dialog(chunk=chunk))
 }
 
 # Remove chunks ------------------------------
@@ -390,5 +428,5 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
     app=ui, server=server,
     viewer = shiny::dialogViewer(title))
 
-  invisible(res)
+  return(invisible(res))
 }
