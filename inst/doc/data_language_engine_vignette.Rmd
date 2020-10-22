@@ -2,7 +2,9 @@
 title: "Building standalone Rmarkdown documents using the data language engine"
 author: "David M. Kaplan"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 params:
   run_gpg: FALSE
 vignette: >
@@ -67,7 +69,7 @@ After the package is installed, `data` chunks can be incorporated in the documen
 
 Both text and binary data files can be encoded, but encoding is only required or regularly used for binary data. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access. The latter option requires that a GPG keyring be installed and properly configured.
 
-Two helper functions, `data_encode` and `data_decode`, are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [base64enc](https://cran.r-project.org/package=base64enc) and [gpg](https://cran.r-project.org/package=gpg) packages. To demonstrate their use, we will use the following simple data frame that exists in both text (CSV) and binary (RDS) formats:
+Two helper functions, `data_encode` and `data_decode`, are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [xfun](https://cran.r-project.org/package=xfun) and [gpg](https://cran.r-project.org/package=gpg) packages. To demonstrate their use, we will use the following simple data frame that exists in both text (CSV) and binary (RDS) formats:
 
 ```{r}
 D = data.frame(a=1:3,b=letters[1:3])
@@ -271,7 +273,7 @@ The *data* inside a text `data` chunk does not have to be scientific data. It ca
 `r ''````
 ````
 
-This will generate the file `references.bib` from the chunk contents. Note that one uses `output.file` instead of `output.var` to save the contents to a file.
+This will generate the file `references.bib` from the chunk contents. Note that one uses `output.file` instead of `output.var` to save the contents to a file. Also note that textual output to a file can also be achieved using the `cat` language environment as described in the *R Markdown Cookbook* [here](https://bookdown.org/yihui/rmarkdown-cookbook/eng-cat.html), though the `data` language engine provides more options for the handling of chunk contents (for example, one can use `base64` encoding to embed Rmarkdown documents within Rmarkdown documents).
 
 As style files like the BibTeX file described above are only used by knitr/pandoc in the final formatting phase of generating an output document, these files can be generated from `data` chunks during the initial phases of the knitting. This allows them to be stored inside the Rmarkdown document itself, with no need for the external file prior to knitting.
 
@@ -693,7 +695,7 @@ There are many potential scenarios where including data inside Rmarkdown documen
 
 `knitrdata` also has uses in cases where the objective is not necessarily to render a document fully standalone. One can use it as a convenient way to input small data tables and data vectors (e.g., see [Numeric vector data](#vectdata) below) into an Rmarkdown document. For example, the `data` chunk syntax combined with CSV data may be simpler and cleaner than creating a `data.frame` or `tibble` directly in R code. Furthermore, though markdown allows one to create small tables by hand, it is difficult or impossible to reproduce the sophisticated tables that `knitr::kable` and `kableExtra` are capable of creating, and tables created in markdown may not *float* as other tables do, potentially an issue for producing scientific publications with Rmarkdown. `knitrdata` can be used as a simple way to input these tables into R, which can then be used as input to `kable` and other tools. Finally, `data` chunks provide a convenient system for making certain Rmarkdown document text conditional on parameter values or results (see [Conditional text in Rmarkdown using knitrdata](#condtext)).
 
-One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](https://www.github.com) or [slack](https://www.slack.com), but one may not have sufficient confidence in the privacy protections of these websites to give them access to the data themselves.  
+One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](https://github.com/) or [slack](https://www.slack.com), but one may not have sufficient confidence in the privacy protections of these websites to give them access to the data themselves.
 
 ## When not to use data chunks
 
@@ -736,7 +738,7 @@ v
 
 ### Conditional text in Rmarkdown with missing values {#condtext}
 
-One way to create large amounts of text in an Rmarkdown document that is only included in the document if certain conditions are met is with the `asis` language engine. For example, if one create an input parameter in the YAML header of an Rmarkdown document:
+One way to create large amounts of text in an Rmarkdown document that is only included in the document if certain conditions are met is with the `asis` language engine (or the `cat` language engine). For example, if one creates an input parameter in the YAML header of an Rmarkdown document:
 
 ```{r eval=FALSE}
 params:
@@ -771,7 +773,7 @@ cat(sprintf(cond_text,5+4))
 
 Will lead to `%d` being replaced with `9`.
 
-### GPG `data` chunk error: `Password callback did not return a string value`
+### Workarounds for GPG data chunk error: *Password callback did not return a string value*
 
 If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected 
 GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
