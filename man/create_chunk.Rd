@@ -35,7 +35,7 @@ if the \code{file} argument is supplied to \code{create_chunk}.}
 be included in the header after the arguments in \dots.}
 
 \item{split_lines}{Boolean indicating whether or not the chunk contents should be split
-along line break (\code{'\n'}) before returning. Defaults to \code{TRUE}.}
+along line breaks before returning. Defaults to \code{TRUE}.}
 
 \item{chunk}{Character string with chunk contents including header and tail.}
 
@@ -75,7 +75,7 @@ including the chunk at the appropriate line number.
 \examples{
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Test --------------
