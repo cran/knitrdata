@@ -100,7 +100,7 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
       x = try(do.call(gpg::gpg_decrypt,c(data=tf,as_text=as_text,options)),silent=TRUE)
       if (any(class(x) == "try-error")) {
         if (grepl("Password callback did not return a string value",x)) {
-          stop(x,"","If this error occurred while knitting a Rmarkdown document, then it occurred because the non-interactive Rmarkdown session was unable to open the GPG key password dialog. To avoid this error, in Rstudio, execute the offending chunk interactively to temporarily store the key password in the GPG keyring manager before knitting. See knitrdata package vignette for more details.")
+          stop(x,"","If this error occurred while knitting a Rmarkdown document, then it occurred because the non-interactive Rmarkdown session was unable to open the GPG key password dialog. See the knitrdata::unlock_gpg_key_passphrase function and the knitrdata package vignette for workarounds and more details.")
         } else {
           stop(x)
         }
@@ -235,8 +235,11 @@ eng_data = function(options) {
     )
 
   # Check md5sum if desired
-  if (!is.null(options$md5sum) && options$md5sum != tools::md5sum(output.file))
-    stop("Given md5sum does not match contents of decoded chunk.")
+  if (!is.null(options$md5sum)) {
+    omd5 = tools::md5sum(output.file)
+    if (options$md5sum != omd5)
+      stop("Given md5sum (= '",options$md5sum,"') does not match md5sum of decoded chunk (= '",omd5,"')")
+  }
 
   # Apply loader function to data if desired
   if (!is.null(options$loader.function)) {
@@ -266,5 +269,5 @@ eng_data = function(options) {
     code = c(code[1:options$max.echo],
              paste0("-- ",length(code)-options$max.echo," more lines of data ommitted --"))
 
-  knitr::engine_output(options,code,output)
+  return(knitr::engine_output(options,code,output))
 }

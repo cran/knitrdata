@@ -1,3 +1,16 @@
+knitrdata 0.6.0
+---------------------------------------------------------------------
+
+- Adding remove_chunks function for command link chunk removal.
+- Fix to empty line removal in create/insert_data_chunk_dialog.
+
+knitrdata 0.5.3
+---------------------------------------------------------------------
+
+- Better tests and documentation of text data + md5sum checks
+- Fixed text file issues with remove and insert RStudio addins
+- Added newline character determination to text file chunk insert via addin
+
 knitrdata 0.5.2
 ---------------------------------------------------------------------
 
@@ -63,4 +76,3 @@ knitrdata 0.1.0
 ---------------------------------------------------------------------
 
 - Initial release
-
