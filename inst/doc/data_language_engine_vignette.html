@@ -12,7 +12,7 @@
 
 <meta name="author" content="David M. Kaplan" />
 
-<meta name="date" content="2020-12-02" />
+<meta name="date" content="2020-12-08" />
 
 <title>Building standalone Rmarkdown documents using the data language engine</title>
 
@@ -367,7 +367,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Building standalone Rmarkdown documents using the data language engine</h1>
 <h4 class="author">David M. Kaplan</h4>
-<h4 class="date">2020-12-02</h4>
+<h4 class="date">2020-12-08</h4>
 
 
 <div id="TOC">
@@ -887,7 +887,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>Stick to a single character encoding for all text files and the operating systems being used, ideally <code>UTF-8</code>.</li>
 </ul>
 <p>If you follow these steps, <code>md5sum</code> checks of text chunk contents should work. The <code>Insert filled data chunk</code> RStudio addin will attempt to set the <code>line.sep</code> chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.</p>
-<p>If for some reason these steps are impractical or are not sufficient (e.g., due to differences in character encodings between operating systems), one can always use a different method to check the validity of chunk contents. For example, the following would do a <em>post hoc</em> check of the validity of loaded data using a SHA1 hash:</p>
+<p>If for some reason these steps are impractical or are not sufficient (e.g., due to differences in character encodings between operating systems), one can always use a different method to check the validity of chunk contents. Base64 encoding of text files with a <code>md5sum</code> check in a <code>data</code> chunk is always a possibility, but if content visibility is important, then one can use other hash algorithms on the output of a <code>data</code> chunk. For example, the following would do a <em>post hoc</em> check of the validity of loaded data using a SHA1 hash:</p>
 <div class="sourceCode" id="cb45"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb45-1"><a href="#cb45-1"></a><span class="bn">```{data output.var=&quot;d&quot;,loader.function=read.csv}</span></span>
 <span id="cb45-2"><a href="#cb45-2"></a><span class="bn">a,b</span></span>
 <span id="cb45-3"><a href="#cb45-3"></a><span class="bn">1,a</span></span>
@@ -899,11 +899,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb45-9"><a href="#cb45-9"></a><span class="bn">if (digest::sha1(d) != &quot;a5918a84b39f0b6f42e9ab4a19771a7d6a5777a0&quot;)</span></span>
 <span id="cb45-10"><a href="#cb45-10"></a><span class="bn">  stop(&quot;data corrupted!&quot;)</span></span>
 <span id="cb45-11"><a href="#cb45-11"></a><span class="bn">```</span></span></code></pre></div>
-<p>These concerns do not apply to <code>base64</code> or <code>gpg</code> encoded text files as the exact text file contents are encoded in the chunk contents.</p>
+<p><code>md5sum</code> checks on <code>base64</code> or <code>gpg</code> encoded text files are generally reliable even if the above steps are not followed as the exact text file contents are encoded in the chunk.</p>
 </div>
 <div id="workarounds-for-gpg-data-chunk-error-password-callback-did-not-return-a-string-value" class="section level3">
 <h3>Workarounds for GPG data chunk error: <em>Password callback did not return a string value</em></h3>
-<p>If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected GPG key, then knitting may fail with the error <code>Password callback did not return a string value</code>. This is because knitting of an Rmarkdown document takes place in a non-interactive R session and, therefore, <code>gpg::gpg_decrypt</code> is unable to open the password entry dialog during the knitting process. The <code>gpg</code> package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. This normally leads to the GPG key password being temporarily stored in the keyring so that <code>gpg::gpg_decrypt</code> will not attempt to open the password entry dialog, thereby avoiding the problem.</p>
+<p>If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected GPG key, then knitting may fail with the error <code>Password callback did not return a string value</code>. This is because knitting of an Rmarkdown document takes place in a non-interactive R session and, therefore, <code>gpg::gpg_decrypt</code> (via <code>knitrdata::data_decode</code>) is unable to open the password entry dialog during the knitting process. The <code>gpg</code> package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. This normally leads to the GPG key password being temporarily stored in the keyring so that <code>gpg::gpg_decrypt</code> will not attempt to open the password entry dialog, thereby avoiding the problem.</p>
 <p>As a workaround for this problem, <code>knitrdata</code> includes the <code>unlock_gpg_key_passphrase</code> that when run from the command line with identifying information regarding the key needed to decrypt the data chunks in the Rmarkdown document will attempt to unlock the key.</p>
 <div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a>knitrdata<span class="op">::</span><span class="kw">unlock_gpg_key_passphrase</span>(<span class="dt">name=</span><span class="st">&quot;David M. Kaplan&quot;</span>)</span></code></pre></div>
 <p>It achieves this by encrypting and then immediately decrypting a small amount of data with the given key.</p>
